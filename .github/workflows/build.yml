@@ -1,4 +1,4 @@
-name: Build Mod Jar
+name: Build Mod Jar 111
 
 on:
   push:
@@ -11,13 +11,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check repo layout
+        run: |
+          pwd
+          ls -la
+          for f in build.gradle settings.gradle gradle.properties src/main/java src/main/resources; do
+            [ -e "$f" ] && echo "OK       $f" || echo "MISSING  $f"
+          done
+
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install Gradle 8.9 (bypass cache)
+      - name: Install Gradle 8.9
         run: |
           cd "$RUNNER_TEMP"
           curl -fL --retry 5 --retry-all-errors -o gradle.zip \
@@ -26,12 +34,5 @@ jobs:
           echo "$RUNNER_TEMP/gradle-8.9/bin" >> "$GITHUB_PATH"
           gradle --version
 
-      - name: Build with Gradle
+      - name: Build
         run: gradle build --no-daemon --stacktrace
-
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: mod-jar
-          path: build/libs/*.jar
-          if-no-files-found: error
