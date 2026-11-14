@@ -12,18 +12,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.9'
+      - name: Install Gradle 8.9 (bypass cache)
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fL --retry 5 --retry-all-errors -o gradle.zip \
+            https://downloads.gradle.org/distributions/gradle-8.9-bin.zip
+          unzip -q gradle.zip
+          echo "$RUNNER_TEMP/gradle-8.9/bin" >> "$GITHUB_PATH"
+          gradle --version
 
       - name: Build with Gradle
-        run: gradle build --no-daemon
+        run: gradle build --no-daemon --stacktrace
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
